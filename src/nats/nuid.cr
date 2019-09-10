@@ -60,7 +60,7 @@ module NATS
     def randomize_prefix!
       @prefix = String::Builder.build(PREFIX_LENGTH) do |io|
         Random::Secure.random_bytes(@pre_bytes)
-        @pre_bytes.each { |n| io << "#{DIGITS[n % BASE]}" }
+        @pre_bytes.each { |n| io << DIGITS[n % BASE] }
       end
     end
 
