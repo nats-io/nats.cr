@@ -171,7 +171,7 @@ module NATS
 
       @out.synchronize do
         @buf.write(PUB_SLICE)
-        @buf.write("#{subject} #{data.size}".to_slice)
+        @buf << subject << ' ' << data.size
         @buf.write(CR_LF_SLICE)
         @buf.write(data)
         @buf.write(CR_LF_SLICE)
@@ -189,7 +189,9 @@ module NATS
       raise "Bad Subject" if subject.empty?
       raise "Connection Closed" if closed?
 
-      @out.synchronize { @buf.write("PUB #{subject} 0\r\n\r\n".to_slice) }
+      @out.synchronize do
+        @buf << "PUB " << subject << " 0\r\n\r\n"
+      end
       @flush.send(true) if @flush.empty?
     end
 
@@ -199,34 +201,25 @@ module NATS
     # nc = NATS::Connection.new("demo.nats.io")
     # nc.publish_with_reply("foo", "reply", "Hello!")
     # ```
-    def publish_with_reply(subject, reply : String, msg)
+    def publish_with_reply(subject, reply : String, msg = nil)
       raise "Bad Subject" if subject.empty?
       raise "Connection Closed" if closed?
 
-      data = msg.to_slice
-      check_size(data)
+      if msg
+        data = msg.to_slice
+        check_size(data)
+      else
+        data = Bytes.empty
+      end
 
       @out.synchronize do
         @buf.write(PUB_SLICE)
-        @buf.write("#{subject} #{reply} #{data.size}".to_slice)
+        @buf << subject << ' ' << reply << ' ' << data.size
         @buf.write(CR_LF_SLICE)
         @buf.write(data)
         @buf.write(CR_LF_SLICE)
       end
       @flush.send(true) if @flush.empty?
-    end
-
-    # ditto
-    def publish_with_reply(subject, reply : String, msg?)
-      raise "Bad Subject" if subject.empty?
-      raise "Connection Closed" if closed?
-
-      if msg?
-        @out.synchronize { @buf.write("PUB #{subject} #{reply} 0\r\n\r\n".to_slice) }
-        @flush.send(true) if @flush.empty?
-      else
-        publish_with_reply(subject, reply, msg?)
-      end
     end
 
     # Flush will flush the connection to the server. Can specify a *timeout*.
@@ -250,7 +243,7 @@ module NATS
       rn = @rand.rand(Int64::MAX)
       String::Builder.build(TOKEN_LENGTH) do |io|
         (0...TOKEN_LENGTH).each do
-          io << "#{NUID::DIGITS[rn % NUID::BASE]}"
+          io << NUID::DIGITS[rn % NUID::BASE]
           rn /= NUID::BASE
         end
       end
@@ -294,7 +287,7 @@ module NATS
 
     private def internal_subscribe(subject : String)
       sid = @gsid += 1
-      @out.synchronize { @buf << "SUB " << subject << " #{sid}\r\n" }
+      @out.synchronize { @buf << "SUB " << subject << ' ' << sid << "\r\n" }
       @flush.send(true) if @flush.empty?
       InternalSubscription.new(sid, self).tap do |sub|
         @subs[sid] = sub
@@ -309,7 +302,7 @@ module NATS
     # ```
     def subscribe(subject : String, &callback : Msg ->)
       sid = @gsid += 1
-      @out.synchronize { @buf << "SUB " << subject << " #{sid}\r\n" }
+      @out.synchronize { @buf << "SUB " << subject << ' ' << sid << "\r\n" }
       @flush.send(true) if @flush.empty?
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
@@ -324,7 +317,7 @@ module NATS
     # ```
     def subscribe(subject, queue : String, &callback : Msg ->)
       sid = @gsid += 1
-      @out.synchronize { @buf << "SUB " << subject << " " << queue << " #{sid}\r\n" }
+      @out.synchronize { @buf << "SUB " << subject << " " << queue << ' ' << sid << "\r\n" }
       @flush.send(true) if @flush.empty?
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
@@ -338,7 +331,7 @@ module NATS
 
     protected def unsubscribe(sid)
       return if closed?
-      @out.synchronize { @buf << "UNSUB #{sid}\r\n" }
+      @out.synchronize { @buf << "UNSUB " << sid << "\r\n" }
       @flush.send(true) if @flush.empty?
     end
 
@@ -515,7 +508,9 @@ module NATS
       cs[:user] = @user.to_s if @user
       cs[:pass] = @pass.to_s if @pass
 
-      @socket << "CONNECT #{cs.to_json}\r\n"
+      @socket << "CONNECT "
+      cs.to_json(@socket)
+      @socket << "\r\n"
     end
   end
 end
