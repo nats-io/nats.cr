@@ -2,6 +2,9 @@
 
 Simple NATS client for the [Crystal](https://http://crystal-lang.org) programming language.
 
+[![License Apache 2](https://img.shields.io/badge/License-Apache2-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Build Status](https://travis-ci.org/nats-io/nats.cr.svg?branch=master)](http://travis-ci.org/nats-io/nats.cr)
+
 ## Installation
 
 1. Add the dependency to your `shard.yml`:

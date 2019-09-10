@@ -49,7 +49,7 @@ class NATSServer
     wait = Time::Span.new(0, 0, max_wait)
     while (Time.now - start < wait) # Wait max_wait seconds max
       return if server_running?(uri)
-      sleep(0.1)
+      sleep(20.millisecond)
     end
     raise "Server not started, can not connect"
   end
