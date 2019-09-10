@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="generator" content="Crystal Docs 0.29.0">
+
+
+<link href="../css/style.css" rel="stylesheet" type="text/css">
+
+<script type="text/javascript" src="../js/doc.js"></script>
+<script type="text/javascript">
+  CrystalDoc.base_path = "../";
+</script>
+
+  <meta id="repository-name" content="github.com/nats-io/nats.cr">
+  <title>NATS::Connection - github.com/nats-io/nats.cr</title>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="search-box">
+      <input type="search" class="search-input" placeholder="Search..." spellcheck="false" aria-label="Search">
+    </div>
+
+    <div class="repository-links">
+      <a href="../index.html">README</a>
+    </div>
+  </div>
+
+  <div class="search-results" class="hidden">
+    <ul class="search-list"></ul>
+  </div>
+
+  <div class="types-list">
+    <ul>
+  
+  <li class="parent open current" data-id="github.com/nats-io/nats.cr/NATS" data-name="nats">
+      <a href="../NATS.html">NATS</a>
+      
+        <ul>
+  
+  <li class=" current" data-id="github.com/nats-io/nats.cr/NATS/Connection" data-name="nats::connection">
+      <a href="../NATS/Connection.html">Connection</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/nats-io/nats.cr/NATS/Msg" data-name="nats::msg">
+      <a href="../NATS/Msg.html">Msg</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/nats-io/nats.cr/NATS/NUID" data-name="nats::nuid">
+      <a href="../NATS/NUID.html">NUID</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/nats-io/nats.cr/NATS/Subscription" data-name="nats::subscription">
+      <a href="../NATS/Subscription.html">Subscription</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+  </div>
+</div>
+
+
+<div class="main-content">
+<h1 class="type-name">
+
+  <span class="kind">class</span> NATS::Connection
+
+</h1>
+
+
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../NATS/Connection.html">NATS::Connection</a></li><li class="superclass">Reference</li><li class="superclass">Object</li></ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2>Defined in:</h2>
+  
+    
+      <a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L28" target="_blank">
+        nats/connection.cr
+      </a>
+    
+    <br/>
+  
+
+
+
+
+
+  <h2>Constructors</h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#new(host,port,user:String?=nil,pass:String?=nil,name:String?=nil,echo=true,pedantic=false)-class-method" class="signature"><strong>.new</strong>(host, port, user : String? = <span class="n">nil</span>, pass : String? = <span class="n">nil</span>, name : String? = <span class="n">nil</span>, echo = <span class="n">true</span>, pedantic = <span class="n">false</span>)</a>
+        
+          <div class="summary"><p>Creates a new connection to a NATS Server.</p></div>
+        
+      </li>
+    
+  </ul>
+
+
+
+
+
+  <h2>Instance Method Summary</h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#close-instance-method" class="signature"><strong>#close</strong></a>
+        
+          <div class="summary"><p>Close a connection to the NATS server.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#closed?:Bool-instance-method" class="signature"><strong>#closed?</strong> : Bool</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#flush(timeout=2.second)-instance-method" class="signature"><strong>#flush</strong>(timeout = <span class="n">2</span>.second)</a>
+        
+          <div class="summary"><p>Flush will flush the connection to the server.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#max_payload:Int32-instance-method" class="signature"><strong>#max_payload</strong> : Int32</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#new_inbox-instance-method" class="signature"><strong>#new_inbox</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#on_close(&callback)-instance-method" class="signature"><strong>#on_close</strong>(&callback)</a>
+        
+          <div class="summary"><p>Setup a callback for when the connection closes.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#on_error(&callback:String-%3E)-instance-method" class="signature"><strong>#on_error</strong>(&callback : String -> )</a>
+        
+          <div class="summary"><p>Setup a callback for an async errors that are received.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#publish(subject:String,msg)-instance-method" class="signature"><strong>#publish</strong>(subject : String, msg)</a>
+        
+          <div class="summary"><p>Publishes a messages to a given subject.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#publish(subject:String)-instance-method" class="signature"><strong>#publish</strong>(subject : String)</a>
+        
+          <div class="summary"><p>Publishes an empty message to a given subject.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#publish_with_reply(subject,reply:String,msg)-instance-method" class="signature"><strong>#publish_with_reply</strong>(subject, reply : String, msg)</a>
+        
+          <div class="summary"><p>Publishes a messages to a given subject with a reply subject.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#request(subject:String,msg?,timeout=2.second)-instance-method" class="signature"><strong>#request</strong>(subject : String, msg?, timeout = <span class="n">2</span>.second)</a>
+        
+          <div class="summary"><p>Request will send a request to the given subject and wait up to <em>timeout</em> for a response.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#subscribe(subject,queue:String,&callback:Msg-%3E)-instance-method" class="signature"><strong>#subscribe</strong>(subject, queue : String, &callback : Msg -> )</a>
+        
+          <div class="summary"><p>Subscribe to a given subject with the queue group.</p></div>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#subscribe(subject:String,queue:String?,&callback:Msg-%3E)-instance-method" class="signature"><strong>#subscribe</strong>(subject : String, queue : String?, &callback : Msg -> )</a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#subscribe(subject:String,&callback:Msg-%3E)-instance-method" class="signature"><strong>#subscribe</strong>(subject : String, &callback : Msg -> )</a>
+        
+          <div class="summary"><p>Subscribe to a given subject.</p></div>
+        
+      </li>
+    
+  </ul>
+
+
+
+
+
+<div class="methods-inherited">
+  
+    
+
+
+    
+
+
+    
+
+
+  
+    
+
+
+    
+
+
+    
+
+
+  
+</div>
+
+
+  <h2>Constructor Detail</h2>
+  
+    <div class="entry-detail" id="new(host,port,user:String?=nil,pass:String?=nil,name:String?=nil,echo=true,pedantic=false)-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>(host, port, user : String? = <span class="n">nil</span>, pass : String? = <span class="n">nil</span>, name : String? = <span class="n">nil</span>, echo = <span class="n">true</span>, pedantic = <span class="n">false</span>)
+
+        <a class="method-permalink" href="#new(host,port,user:String?=nil,pass:String?=nil,name:String?=nil,echo=true,pedantic=false)-class-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Creates a new connection to a NATS Server.</p>
+
+<pre><code>nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span>(<span class="s">&quot;demo.nats.io&quot;</span>)
+nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span>(<span class="s">&quot;tls://demo.nats.io&quot;</span>)
+nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span>(<span class="s">&quot;nats://</span><span class="i">#{</span>user<span class="i">}</span><span class="s">:</span><span class="i">#{</span>pass<span class="i">}</span><span class="s">@127.0.0.1:4222&quot;</span>)
+nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span>(<span class="n">4222</span>, name: <span class="s">&quot;Sample App&quot;</span>, user: <span class="s">&quot;derek&quot;</span>, pass: <span class="s">&quot;s3cr3t&quot;</span>)
+nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span>(<span class="n">4222</span>)
+nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span></code></pre></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L55" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+
+
+
+  <h2>Instance Method Detail</h2>
+  
+    <div class="entry-detail" id="close-instance-method">
+      <div class="signature">
+        
+        def <strong>close</strong>
+
+        <a class="method-permalink" href="#close-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Close a connection to the NATS server.</p>
+
+<pre><code>nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span>(<span class="s">&quot;demo.nats.io&quot;</span>)
+nc.close</code></pre></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L347" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="closed?:Bool-instance-method">
+      <div class="signature">
+        
+        def <strong>closed?</strong> : Bool
+
+        <a class="method-permalink" href="#closed?:Bool-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L42" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="flush(timeout=2.second)-instance-method">
+      <div class="signature">
+        
+        def <strong>flush</strong>(timeout = <span class="n">2</span>.second)
+
+        <a class="method-permalink" href="#flush(timeout=2.second)-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Flush will flush the connection to the server. Can specify a <em>timeout</em>.</p></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L229" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="max_payload:Int32-instance-method">
+      <div class="signature">
+        
+        def <strong>max_payload</strong> : Int32
+
+        <a class="method-permalink" href="#max_payload:Int32-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L43" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="new_inbox-instance-method">
+      <div class="signature">
+        
+        def <strong>new_inbox</strong>
+
+        <a class="method-permalink" href="#new_inbox-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L238" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="on_close(&amp;callback)-instance-method">
+      <div class="signature">
+        
+        def <strong>on_close</strong>(&callback)
+
+        <a class="method-permalink" href="#on_close(&callback)-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Setup a callback for when the connection closes.</p>
+
+<pre><code>nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span>(<span class="s">&quot;demo.nats.io&quot;</span>)
+nc.on_close { puts <span class="s">&quot;Connection closed!&quot;</span> }
+nc.close</code></pre></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L369" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="on_error(&amp;callback:String-&gt;)-instance-method">
+      <div class="signature">
+        
+        def <strong>on_error</strong>(&callback : String -> )
+
+        <a class="method-permalink" href="#on_error(&callback:String-%3E)-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Setup a callback for an async errors that are received.</p>
+
+<pre><code>nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span>(<span class="s">&quot;demo.nats.io&quot;</span>)
+nc.on_error { <span class="o">|</span>e<span class="o">|</span> puts <span class="s">&quot;Received an error </span><span class="i">#{</span>e<span class="i">}</span><span class="s">&quot;</span> }</code></pre></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L379" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="publish(subject:String,msg)-instance-method">
+      <div class="signature">
+        
+        def <strong>publish</strong>(subject : String, msg)
+
+        <a class="method-permalink" href="#publish(subject:String,msg)-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Publishes a messages to a given subject.</p>
+
+<pre><code>nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span>(<span class="s">&quot;demo.nats.io&quot;</span>)
+nc.publish(<span class="s">&quot;foo&quot;</span>, <span class="s">&quot;Hello!&quot;</span>)</code></pre></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L164" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="publish(subject:String)-instance-method">
+      <div class="signature">
+        
+        def <strong>publish</strong>(subject : String)
+
+        <a class="method-permalink" href="#publish(subject:String)-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Publishes an empty message to a given subject.</p>
+
+<pre><code>nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span>(<span class="s">&quot;demo.nats.io&quot;</span>)
+nc.publish(<span class="s">&quot;foo&quot;</span>)</code></pre></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L188" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="publish_with_reply(subject,reply:String,msg)-instance-method">
+      <div class="signature">
+        
+        def <strong>publish_with_reply</strong>(subject, reply : String, msg)
+
+        <a class="method-permalink" href="#publish_with_reply(subject,reply:String,msg)-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Publishes a messages to a given subject with a reply subject.</p>
+
+<pre><code>nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span>(<span class="s">&quot;demo.nats.io&quot;</span>)
+nc.publish_with_reply(<span class="s">&quot;foo&quot;</span>, <span class="s">&quot;reply&quot;</span>, <span class="s">&quot;Hello!&quot;</span>)</code></pre></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L220" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="request(subject:String,msg?,timeout=2.second)-instance-method">
+      <div class="signature">
+        
+        def <strong>request</strong>(subject : String, msg?, timeout = <span class="n">2</span>.second)
+
+        <a class="method-permalink" href="#request(subject:String,msg?,timeout=2.second)-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Request will send a request to the given subject and wait up to <em>timeout</em> for a response.</p>
+
+<pre><code>nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span>(<span class="s">&quot;demo.nats.io&quot;</span>)
+answer <span class="o">=</span> nc.request(<span class="s">&quot;req&quot;</span>, <span class="s">&quot;Help!&quot;</span>)
+puts <span class="s">&quot;Received a response &#39;</span><span class="i">#{</span>answer<span class="i">}</span><span class="s">&#39;!&quot;</span></code></pre></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L275" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="subscribe(subject,queue:String,&amp;callback:Msg-&gt;)-instance-method">
+      <div class="signature">
+        
+        def <strong>subscribe</strong>(subject, queue : String, &callback : <a href="../NATS/Msg.html">Msg</a> -> )
+
+        <a class="method-permalink" href="#subscribe(subject,queue:String,&callback:Msg-%3E)-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Subscribe to a given subject with the queue group. Will yield to the callback provided with the message received.</p>
+
+<pre><code>nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span>(<span class="s">&quot;demo.nats.io&quot;</span>)
+nc.subscribe(<span class="s">&quot;foo&quot;</span>, <span class="s">&quot;group1&quot;</span>) { <span class="o">|</span>msg<span class="o">|</span> puts <span class="s">&quot;Received &#39;</span><span class="i">#{</span>msg<span class="i">}</span><span class="s">&#39;&quot;</span> }</code></pre></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L321" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="subscribe(subject:String,queue:String?,&amp;callback:Msg-&gt;)-instance-method">
+      <div class="signature">
+        
+        def <strong>subscribe</strong>(subject : String, queue : String?, &callback : <a href="../NATS/Msg.html">Msg</a> -> )
+
+        <a class="method-permalink" href="#subscribe(subject:String,queue:String?,&callback:Msg-%3E)-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L330" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="subscribe(subject:String,&amp;callback:Msg-&gt;)-instance-method">
+      <div class="signature">
+        
+        def <strong>subscribe</strong>(subject : String, &callback : <a href="../NATS/Msg.html">Msg</a> -> )
+
+        <a class="method-permalink" href="#subscribe(subject:String,&callback:Msg-%3E)-instance-method">#</a>
+      </div>
+      
+        <div class="doc"><p>Subscribe to a given subject. Will yield to the callback provided with the message received.</p>
+
+<pre><code>nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span>(<span class="s">&quot;demo.nats.io&quot;</span>)
+nc.subscribe(<span class="s">&quot;foo&quot;</span>) { <span class="o">|</span>msg<span class="o">|</span> puts <span class="s">&quot;Received &#39;</span><span class="i">#{</span>msg<span class="i">}</span><span class="s">&#39;&quot;</span> }</code></pre></div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/connection.cr#L306" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+
+
+</div>
+
+</body>
+</html>

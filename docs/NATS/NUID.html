@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="generator" content="Crystal Docs 0.29.0">
+
+
+<link href="../css/style.css" rel="stylesheet" type="text/css">
+
+<script type="text/javascript" src="../js/doc.js"></script>
+<script type="text/javascript">
+  CrystalDoc.base_path = "../";
+</script>
+
+  <meta id="repository-name" content="github.com/nats-io/nats.cr">
+  <title>NATS::NUID - github.com/nats-io/nats.cr</title>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="search-box">
+      <input type="search" class="search-input" placeholder="Search..." spellcheck="false" aria-label="Search">
+    </div>
+
+    <div class="repository-links">
+      <a href="../index.html">README</a>
+    </div>
+  </div>
+
+  <div class="search-results" class="hidden">
+    <ul class="search-list"></ul>
+  </div>
+
+  <div class="types-list">
+    <ul>
+  
+  <li class="parent open current" data-id="github.com/nats-io/nats.cr/NATS" data-name="nats">
+      <a href="../NATS.html">NATS</a>
+      
+        <ul>
+  
+  <li class=" " data-id="github.com/nats-io/nats.cr/NATS/Connection" data-name="nats::connection">
+      <a href="../NATS/Connection.html">Connection</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/nats-io/nats.cr/NATS/Msg" data-name="nats::msg">
+      <a href="../NATS/Msg.html">Msg</a>
+      
+    </li>
+  
+  <li class=" current" data-id="github.com/nats-io/nats.cr/NATS/NUID" data-name="nats::nuid">
+      <a href="../NATS/NUID.html">NUID</a>
+      
+    </li>
+  
+  <li class=" " data-id="github.com/nats-io/nats.cr/NATS/Subscription" data-name="nats::subscription">
+      <a href="../NATS/Subscription.html">Subscription</a>
+      
+    </li>
+  
+</ul>
+
+      
+    </li>
+  
+</ul>
+
+  </div>
+</div>
+
+
+<div class="main-content">
+<h1 class="type-name">
+
+  <span class="kind">class</span> NATS::NUID
+
+</h1>
+
+
+  <ul class="superclass-hierarchy"><li class="superclass"><a href="../NATS/NUID.html">NATS::NUID</a></li><li class="superclass">Reference</li><li class="superclass">Object</li></ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2>Defined in:</h2>
+  
+    
+      <a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/nuid.cr#L21" target="_blank">
+        nats/nuid.cr
+      </a>
+    
+    <br/>
+  
+
+
+
+  
+    <h2>Constant Summary</h2>
+  
+  <dl>
+    
+      <dt class="entry-const" id="BASE">
+        <strong>BASE</strong> = <code><span class="n">62</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="DIGITS">
+        <strong>DIGITS</strong> = <code><span class="s">&quot;0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz&quot;</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="INC">
+        <strong>INC</strong> = <code><span class="t">MAX_INC</span> <span class="o">-</span> <span class="t">MIN_INC</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="MAX_INC">
+        <strong>MAX_INC</strong> = <code><span class="n">333_i64</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="MAX_SEQ">
+        <strong>MAX_SEQ</strong> = <code><span class="n">839299365868340224_i64</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="MIN_INC">
+        <strong>MIN_INC</strong> = <code><span class="n">33_i64</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="PREFIX_LENGTH">
+        <strong>PREFIX_LENGTH</strong> = <code><span class="n">12</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="SEQ_LENGTH">
+        <strong>SEQ_LENGTH</strong> = <code><span class="n">10</span></code>
+      </dt>
+      
+    
+      <dt class="entry-const" id="TOTAL_LENGTH">
+        <strong>TOTAL_LENGTH</strong> = <code><span class="t">PREFIX_LENGTH</span> <span class="o">+</span> <span class="t">SEQ_LENGTH</span></code>
+      </dt>
+      
+    
+  </dl>
+
+
+
+  <h2>Constructors</h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#new-class-method" class="signature"><strong>.new</strong></a>
+        
+      </li>
+    
+  </ul>
+
+
+
+
+
+  <h2>Instance Method Summary</h2>
+  <ul class="list-summary">
+    
+      <li class="entry-summary">
+        <a href="#next-instance-method" class="signature"><strong>#next</strong></a>
+        
+      </li>
+    
+      <li class="entry-summary">
+        <a href="#randomize_prefix!-instance-method" class="signature"><strong>#randomize_prefix!</strong></a>
+        
+      </li>
+    
+  </ul>
+
+
+
+
+
+<div class="methods-inherited">
+  
+    
+
+
+    
+
+
+    
+
+
+  
+    
+
+
+    
+
+
+    
+
+
+  
+</div>
+
+
+  <h2>Constructor Detail</h2>
+  
+    <div class="entry-detail" id="new-class-method">
+      <div class="signature">
+        
+        def self.<strong>new</strong>
+
+        <a class="method-permalink" href="#new-class-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/nuid.cr#L32" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+
+
+
+  <h2>Instance Method Detail</h2>
+  
+    <div class="entry-detail" id="next-instance-method">
+      <div class="signature">
+        
+        def <strong>next</strong>
+
+        <a class="method-permalink" href="#next-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/nuid.cr#L38" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+    <div class="entry-detail" id="randomize_prefix!-instance-method">
+      <div class="signature">
+        
+        def <strong>randomize_prefix!</strong>
+
+        <a class="method-permalink" href="#randomize_prefix!-instance-method">#</a>
+      </div>
+      
+      <br/>
+      <div>
+        
+          [<a href="https://github.com/nats-io/nats.cr/blob/5949408bd9050474736462ab7e71efbe2cc6f0e5/src/nats/nuid.cr#L60" target="_blank">View source</a>]
+        
+      </div>
+    </div>
+  
+
+
+
+
+</div>
+
+</body>
+</html>

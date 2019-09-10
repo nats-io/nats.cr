@@ -1,0 +1,6 @@
+language: crystal
+sudo: false
+
+script:
+  - crystal spec
+  - crystal tool format --check

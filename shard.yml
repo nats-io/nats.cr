@@ -1,0 +1,19 @@
+name: nats
+version: 0.0.1
+
+authors:
+  - Derek Collison <derek@nats.io>
+
+github: nats-io/nats.cr
+
+targets:
+  nats-pub:
+    main: bin/nats-pub.cr
+  nats-sub:
+    main: bin/nats-sub.cr
+  nats-req:
+    main: bin/nats-req.cr
+
+crystal: 0.30.1
+
+license: Apache 2

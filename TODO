@@ -1,0 +1,8 @@
+1. auto-unsub, max messages
+2. Multiple URLs/Servers
+3. Reconnect logic
+4. Async INFO processing
+5. Multiple servers, state logic CONNECTED/RECONNECTING/DISCONNECTED/CLOSED
+6. msgs/bytes stats for connections and subscriptions
+7. async request?
+8. NATS 2.0 security/auth
