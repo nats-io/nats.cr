@@ -11,7 +11,7 @@ Simple NATS client for the [Crystal](https://http://crystal-lang.org) programmin
 
 ```yaml
    dependencies:
-     NATS:
+     nats:
        github: nats-io/nats.cr
 ```
 
