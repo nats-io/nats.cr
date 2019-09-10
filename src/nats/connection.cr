@@ -217,12 +217,16 @@ module NATS
     end
 
     # ditto
-    def publish_with_reply(subject, reply : String, msg)
+    def publish_with_reply(subject, reply : String, msg?)
       raise "Bad Subject" if subject.empty?
       raise "Connection Closed" if closed?
 
-      @out.synchronize { @buf.write("PUB #{subject} #{reply} 0\r\n\r\n".to_slice) }
-      @flush.send(true) if @flush.empty?
+      if msg?
+        @out.synchronize { @buf.write("PUB #{subject} #{reply} 0\r\n\r\n".to_slice) }
+        @flush.send(true) if @flush.empty?
+      else
+        publish_with_reply(subject, reply, msg?)
+      end
     end
 
     # Flush will flush the connection to the server. Can specify a *timeout*.
