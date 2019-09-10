@@ -9,11 +9,11 @@ Simple NATS client for the [Crystal](https://http://crystal-lang.org) programmin
 
 1. Add the dependency to your `shard.yml`:
 
-   ```yaml
+```yaml
    dependencies:
      NATS:
        github: nats-io/nats.cr
-   ```
+```
 
 2. Run `shards install`
 
