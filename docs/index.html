@@ -92,7 +92,7 @@
 
 <h2>Usage</h2>
 
-<pre><code class="language-crystal"><span class="k">require</span> <span class="s">&quot;NATS&quot;</span>
+<pre><code class="language-crystal"><span class="k">require</span> <span class="s">&quot;nats&quot;</span>
 
 nc <span class="o">=</span> <span class="t">NATS</span><span class="t">::</span><span class="t">Connection</span>.<span class="k">new</span>(<span class="s">&quot;demo.nats.io&quot;</span>)
 nc.subscribe(<span class="s">&quot;foo&quot;</span>) { <span class="o">|</span>msg<span class="o">|</span> puts <span class="s">&quot;Received &#39;</span><span class="i">#{</span>msg<span class="i">}</span><span class="s">&#39;&quot;</span>}

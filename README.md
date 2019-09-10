@@ -20,7 +20,7 @@ Simple NATS client for the [Crystal](https://http://crystal-lang.org) programmin
 ## Usage
 
 ```crystal
-require "NATS"
+require "nats"
 
 nc = NATS::Connection.new("demo.nats.io")
 nc.subscribe("foo") { |msg| puts "Received '#{msg}'"}
