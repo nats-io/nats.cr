@@ -171,7 +171,8 @@ module NATS
 
       @out.synchronize do
         @buf.write(PUB_SLICE)
-        @buf << subject << ' ' << data.size
+        @buf.write(subject.to_slice)
+        @buf << ' ' << data.size
         @buf.write(CR_LF_SLICE)
         @buf.write(data)
         @buf.write(CR_LF_SLICE)
@@ -190,7 +191,9 @@ module NATS
       raise "Connection Closed" if closed?
 
       @out.synchronize do
-        @buf << "PUB " << subject << " 0\r\n\r\n"
+        @buf.write(PUB_SLICE)
+        @buf.write(subject.to_slice)
+        @buf.write(" 0\r\n\r\n".to_slice)
       end
       @flush.send(true) if @flush.empty?
     end
@@ -214,7 +217,10 @@ module NATS
 
       @out.synchronize do
         @buf.write(PUB_SLICE)
-        @buf << subject << ' ' << reply << ' ' << data.size
+        @buf.write(subject.to_slice)
+        @buf << ' '
+        @buf.write(reply.to_slice)
+        @buf << ' ' << data.size
         @buf.write(CR_LF_SLICE)
         @buf.write(data)
         @buf.write(CR_LF_SLICE)
@@ -287,7 +293,12 @@ module NATS
 
     private def internal_subscribe(subject : String)
       sid = @gsid += 1
-      @out.synchronize { @buf << "SUB " << subject << ' ' << sid << "\r\n" }
+      @out.synchronize do
+        @buf.write("SUB ".to_slice)
+        @buf.write(subject.to_slice)
+        @buf << ' ' << sid
+        @buf.write(CR_LF_SLICE)
+      end
       @flush.send(true) if @flush.empty?
       InternalSubscription.new(sid, self).tap do |sub|
         @subs[sid] = sub
@@ -302,7 +313,12 @@ module NATS
     # ```
     def subscribe(subject : String, &callback : Msg ->)
       sid = @gsid += 1
-      @out.synchronize { @buf << "SUB " << subject << ' ' << sid << "\r\n" }
+      @out.synchronize do
+        @buf.write("SUB ".to_slice)
+        @buf.write(subject.to_slice)
+        @buf << ' ' << sid
+        @buf.write(CR_LF_SLICE)
+      end
       @flush.send(true) if @flush.empty?
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
@@ -317,7 +333,14 @@ module NATS
     # ```
     def subscribe(subject, queue : String, &callback : Msg ->)
       sid = @gsid += 1
-      @out.synchronize { @buf << "SUB " << subject << " " << queue << ' ' << sid << "\r\n" }
+      @out.synchronize do
+        @buf.write("SUB ".to_slice)
+        @buf.write(subject.to_slice)
+        @buf << ' '
+        @buf.write(queue.to_slice)
+        @buf << ' ' << sid
+        @buf.write(CR_LF_SLICE)
+      end
       @flush.send(true) if @flush.empty?
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
@@ -331,7 +354,11 @@ module NATS
 
     protected def unsubscribe(sid)
       return if closed?
-      @out.synchronize { @buf << "UNSUB " << sid << "\r\n" }
+      @out.synchronize do
+        @buf.write("UNSUB ".to_slice)
+        @buf << sid
+        @buf.write(CR_LF_SLICE)
+      end
       @flush.send(true) if @flush.empty?
     end
 
