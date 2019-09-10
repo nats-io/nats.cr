@@ -76,13 +76,12 @@ module NATS
       @socket = TCPSocket.new(host, port)
       if (s = @socket).is_a?(TCPSocket)
         s.tcp_nodelay = true
-        s.sync = true
+        s.sync = false
         s.read_buffering = true
         s.buffer_size = BUFFER_SIZE
       end
 
       # For efficient batched writes
-      @buf = IO::Memory.new(BUFFER_SIZE)
       @out = Mutex.new
 
       @closed = false
@@ -170,12 +169,12 @@ module NATS
       check_size(data)
 
       @out.synchronize do
-        @buf.write(PUB_SLICE)
-        @buf.write(subject.to_slice)
-        @buf << ' ' << data.size
-        @buf.write(CR_LF_SLICE)
-        @buf.write(data)
-        @buf.write(CR_LF_SLICE)
+        @socket.write(PUB_SLICE)
+        @socket.write(subject.to_slice)
+        @socket << ' ' << data.size
+        @socket.write(CR_LF_SLICE)
+        @socket.write(data)
+        @socket.write(CR_LF_SLICE)
       end
       @flush.send(true) if @flush.empty?
     end
@@ -191,10 +190,11 @@ module NATS
       raise "Connection Closed" if closed?
 
       @out.synchronize do
-        @buf.write(PUB_SLICE)
-        @buf.write(subject.to_slice)
-        @buf.write(" 0\r\n\r\n".to_slice)
+        @socket.write(PUB_SLICE)
+        @socket.write(subject.to_slice)
+        @socket.write(" 0\r\n\r\n".to_slice)
       end
+
       @flush.send(true) if @flush.empty?
     end
 
@@ -216,14 +216,14 @@ module NATS
       end
 
       @out.synchronize do
-        @buf.write(PUB_SLICE)
-        @buf.write(subject.to_slice)
-        @buf << ' '
-        @buf.write(reply.to_slice)
-        @buf << ' ' << data.size
-        @buf.write(CR_LF_SLICE)
-        @buf.write(data)
-        @buf.write(CR_LF_SLICE)
+        @socket.write(PUB_SLICE)
+        @socket.write(subject.to_slice)
+        @socket << ' '
+        @socket.write(reply.to_slice)
+        @socket << ' ' << data.size
+        @socket.write(CR_LF_SLICE)
+        @socket.write(data)
+        @socket.write(CR_LF_SLICE)
       end
       @flush.send(true) if @flush.empty?
     end
@@ -232,7 +232,7 @@ module NATS
     def flush(timeout = 2.second)
       ch = Channel(Nil).new
       @pongs.push(ch)
-      @out.synchronize { @buf.write(PING_SLICE) }
+      @out.synchronize { @socket.write(PING_SLICE) }
       flush_outbound
       spawn { sleep timeout; ch.close }
       ch.receive rescue {raise "Flush Timeout"}
@@ -294,10 +294,10 @@ module NATS
     private def internal_subscribe(subject : String)
       sid = @gsid += 1
       @out.synchronize do
-        @buf.write("SUB ".to_slice)
-        @buf.write(subject.to_slice)
-        @buf << ' ' << sid
-        @buf.write(CR_LF_SLICE)
+        @socket.write("SUB ".to_slice)
+        @socket.write(subject.to_slice)
+        @socket << ' ' << sid
+        @socket.write(CR_LF_SLICE)
       end
       @flush.send(true) if @flush.empty?
       InternalSubscription.new(sid, self).tap do |sub|
@@ -314,10 +314,10 @@ module NATS
     def subscribe(subject : String, &callback : Msg ->)
       sid = @gsid += 1
       @out.synchronize do
-        @buf.write("SUB ".to_slice)
-        @buf.write(subject.to_slice)
-        @buf << ' ' << sid
-        @buf.write(CR_LF_SLICE)
+        @socket.write("SUB ".to_slice)
+        @socket.write(subject.to_slice)
+        @socket << ' ' << sid
+        @socket.write(CR_LF_SLICE)
       end
       @flush.send(true) if @flush.empty?
       Subscription.new(sid, self, callback).tap do |sub|
@@ -334,12 +334,12 @@ module NATS
     def subscribe(subject, queue : String, &callback : Msg ->)
       sid = @gsid += 1
       @out.synchronize do
-        @buf.write("SUB ".to_slice)
-        @buf.write(subject.to_slice)
-        @buf << ' '
-        @buf.write(queue.to_slice)
-        @buf << ' ' << sid
-        @buf.write(CR_LF_SLICE)
+        @socket.write("SUB ".to_slice)
+        @socket.write(subject.to_slice)
+        @socket << ' '
+        @socket.write(queue.to_slice)
+        @socket << ' ' << sid
+        @socket.write(CR_LF_SLICE)
       end
       @flush.send(true) if @flush.empty?
       Subscription.new(sid, self, callback).tap do |sub|
@@ -355,9 +355,9 @@ module NATS
     protected def unsubscribe(sid)
       return if closed?
       @out.synchronize do
-        @buf.write("UNSUB ".to_slice)
-        @buf << sid
-        @buf.write(CR_LF_SLICE)
+        @socket.write("UNSUB ".to_slice)
+        @socket << sid
+        @socket.write(CR_LF_SLICE)
       end
       @flush.send(true) if @flush.empty?
     end
@@ -447,7 +447,7 @@ module NATS
           sub = @subs[sid]
           sub.send(Msg.new($1, payload, $4?, self)) unless sub.nil?
         when PING
-          @out.synchronize { @buf.write(PONG_SLICE) }
+          @out.synchronize { @socket.write(PONG_SLICE) }
           flush_outbound
         when PONG
           ch = @pongs.pop?
@@ -468,11 +468,11 @@ module NATS
       close
     end
 
+    @flush_counter = 0
+
     private def flush_outbound
       @out.synchronize do
-        @socket.write(@buf.to_slice)
         @socket.flush
-        @buf.clear
       end
     end
 
@@ -481,6 +481,7 @@ module NATS
         fs = @flush.receive
         break if fs.nil?
         flush_outbound
+        Fiber.yield
       end
     end
 
