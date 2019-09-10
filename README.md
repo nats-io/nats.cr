@@ -1,4 +1,4 @@
-# NATS
+# NATS - Crystal Client
 
 Simple NATS client for the [Crystal](https://http://crystal-lang.org) programming language.
 
