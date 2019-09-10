@@ -496,20 +496,21 @@ module NATS
     end
 
     private def send_connect
-      cs = {
-        :verbose  => false,
-        :pedantic => @pedantic,
-        :lang     => LANG,
-        :version  => VERSION,
-        :protocol => 1,
-      }
-      cs[:name] = @name.to_s if @name
-
-      cs[:user] = @user.to_s if @user
-      cs[:pass] = @pass.to_s if @pass
-
       @socket << "CONNECT "
-      cs.to_json(@socket)
+      JSON.build(@socket) do |json|
+        json.object do
+          json.field "verbose", false
+          json.field "pedantic", @pedantic
+          json.field "lang", LANG
+          json.field "version", VERSION
+          json.field "protocol", 1
+
+          json.field "name", @name.to_s if @name
+
+          json.field "user", @user.to_s if @user
+          json.field "pass", @pass.to_s if @pass
+        end
+      end
       @socket << "\r\n"
     end
   end
