@@ -1,6 +1,16 @@
 language: crystal
 sudo: false
 
+cache:
+  directories:
+  - $HOME/nats-server
+
+before_install:
+  - bash ./scripts/install_nats-server.sh
+
+before_script:
+  - export PATH=$HOME/nats-server:$PATH
+
 script:
   - crystal spec
   - crystal tool format --check
