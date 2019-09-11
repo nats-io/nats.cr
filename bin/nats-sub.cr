@@ -42,6 +42,7 @@ subject, queue_group = args[0], args[1]?
 index = 0
 
 nc = NATS::Connection.new(server)
+nc.on_close { STDERR.puts "Connection closed, exiting."; exit(1) }
 
 nc.subscribe(subject, queue_group) do |msg|
   if show_raw
