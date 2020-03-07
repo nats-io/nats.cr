@@ -145,7 +145,7 @@ module NATS
       @out.synchronize do
         yield
       end
-      @flush.send(true) if @flush.empty?
+      send_flush
     end
 
     private def check_size(data)
@@ -176,7 +176,7 @@ module NATS
         @socket.write(data)
         @socket.write(CR_LF_SLICE)
       end
-      @flush.send(true) if @flush.empty?
+      send_flush
     end
 
     # Publishes an empty message to a given subject.
@@ -195,7 +195,7 @@ module NATS
         @socket.write(" 0\r\n\r\n".to_slice)
       end
 
-      @flush.send(true) if @flush.empty?
+      send_flush
     end
 
     # Publishes a messages to a given subject with a reply subject.
@@ -225,7 +225,7 @@ module NATS
         @socket.write(data)
         @socket.write(CR_LF_SLICE)
       end
-      @flush.send(true) if @flush.empty?
+      send_flush
     end
 
     # Flush will flush the connection to the server. Can specify a *timeout*.
@@ -250,7 +250,7 @@ module NATS
       String::Builder.build(TOKEN_LENGTH) do |io|
         (0...TOKEN_LENGTH).each do
           io << NUID::DIGITS[rn % NUID::BASE]
-          rn /= NUID::BASE
+          rn //= NUID::BASE
         end
       end
     end
@@ -299,7 +299,7 @@ module NATS
         @socket << ' ' << sid
         @socket.write(CR_LF_SLICE)
       end
-      @flush.send(true) if @flush.empty?
+      send_flush
       InternalSubscription.new(sid, self).tap do |sub|
         @subs[sid] = sub
       end
@@ -319,7 +319,7 @@ module NATS
         @socket << ' ' << sid
         @socket.write(CR_LF_SLICE)
       end
-      @flush.send(true) if @flush.empty?
+      send_flush
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
       end
@@ -341,7 +341,7 @@ module NATS
         @socket << ' ' << sid
         @socket.write(CR_LF_SLICE)
       end
-      @flush.send(true) if @flush.empty?
+      send_flush
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
       end
@@ -359,7 +359,7 @@ module NATS
         @socket << sid
         @socket.write(CR_LF_SLICE)
       end
-      @flush.send(true) if @flush.empty?
+      send_flush
     end
 
     # Close a connection to the NATS server.
@@ -371,10 +371,7 @@ module NATS
     def close
       return if @closed
       @closed = true
-      @out.synchronize do
-        flush_outbound
-        @socket.flush
-      end
+      flush_outbound
       @socket.close
       @subs.each { |sid, sub| sub.unsubscribe }
       # TODO(dlc) - pop any calls in flush.
@@ -556,6 +553,10 @@ module NATS
         end
       end
       @socket << "\r\n"
+    end
+
+    private def send_flush
+      @flush.send(true) if @flush.@queue.not_nil!.empty?
     end
   end
 end
