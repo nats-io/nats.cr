@@ -508,8 +508,8 @@ module NATS
       if match = line.match(INFO)
         info_json = match.captures.first
         @server_info = JSON.parse(info_json.to_s).as_h
-        unless @server_info[:max_payload]?.nil?
-          @max_payload = @server_info[:max_payload].as_i
+        if max_payload = @server_info["max_payload"]?
+          @max_payload = max_payload.as_i
         end
       else
         raise "INFO not valid"
