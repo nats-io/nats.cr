@@ -107,7 +107,6 @@ module NATS
       spawn inbound
 
       # spawn for our outbound
-      @flush = Channel(Bool?).new(8)
       spawn outbound
     end
 
@@ -145,7 +144,6 @@ module NATS
       @out.synchronize do
         yield
       end
-      send_flush
     end
 
     private def check_size(data)
@@ -176,7 +174,6 @@ module NATS
         @socket.write(data)
         @socket.write(CR_LF_SLICE)
       end
-      send_flush
     end
 
     # Publishes an empty message to a given subject.
@@ -194,8 +191,6 @@ module NATS
         @socket.write(subject.to_slice)
         @socket.write(" 0\r\n\r\n".to_slice)
       end
-
-      send_flush
     end
 
     # Publishes a messages to a given subject with a reply subject.
@@ -225,17 +220,6 @@ module NATS
         @socket.write(data)
         @socket.write(CR_LF_SLICE)
       end
-      send_flush
-    end
-
-    # Flush will flush the connection to the server. Can specify a *timeout*.
-    def flush(timeout = 2.second)
-      ch = Channel(Nil).new
-      @pongs.push(ch)
-      @out.synchronize { @socket.write(PING_SLICE) }
-      flush_outbound
-      spawn { sleep timeout; ch.close }
-      ch.receive rescue {raise "Flush Timeout"}
     end
 
     def new_inbox
@@ -299,7 +283,7 @@ module NATS
         @socket << ' ' << sid
         @socket.write(CR_LF_SLICE)
       end
-      send_flush
+
       InternalSubscription.new(sid, self).tap do |sub|
         @subs[sid] = sub
       end
@@ -319,7 +303,7 @@ module NATS
         @socket << ' ' << sid
         @socket.write(CR_LF_SLICE)
       end
-      send_flush
+
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
       end
@@ -341,7 +325,7 @@ module NATS
         @socket << ' ' << sid
         @socket.write(CR_LF_SLICE)
       end
-      send_flush
+
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
       end
@@ -359,7 +343,6 @@ module NATS
         @socket << sid
         @socket.write(CR_LF_SLICE)
       end
-      send_flush
     end
 
     # Close a connection to the NATS server.
@@ -481,8 +464,6 @@ module NATS
       close
     end
 
-    @flush_counter = 0
-
     private def flush_outbound
       @out.synchronize do
         @socket.flush
@@ -491,10 +472,8 @@ module NATS
 
     private def outbound
       until closed?
-        fs = @flush.receive
-        break if fs.nil?
+        sleep 10.milliseconds
         flush_outbound
-        Fiber.yield
       end
     end
 
@@ -553,10 +532,6 @@ module NATS
         end
       end
       @socket << "\r\n"
-    end
-
-    private def send_flush
-      @flush.send(true) if @flush.@queue.not_nil!.empty?
     end
   end
 end
