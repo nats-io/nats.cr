@@ -437,13 +437,13 @@ module NATS
     # Should try manual blind read and hand rolled parser similar to Golang. Also make sure Channels is not slowdown.
     private def inbound
       until closed?
-        case data = @socket.gets(CR_LF)
+        case data = @socket.gets('\n')
         when MSG
           bytesize = $5.to_i
           sid = $2.to_i
           payload = Bytes.new(bytesize)
           @socket.read_fully?(payload) || raise "Unexpected EOF"
-          @socket.gets(CR_LF)
+          @socket.gets('\n')
           sub = @subs[sid]
           sub.send(Msg.new($1, payload, $4?, self)) unless sub.nil?
         when PING
