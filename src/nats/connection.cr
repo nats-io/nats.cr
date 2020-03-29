@@ -64,6 +64,7 @@ module NATS
       @nuid = NUID.new
       @resp_sub_prefix = "_INBOX.#{@nuid.next}"
       @rand = Random.new
+      @waiting_count = Atomic(Int32).new(0)
 
       # This will be updated when we receive an INFO from the server.
       @max_payload = MAX_PAYLOAD
@@ -173,6 +174,8 @@ module NATS
         @socket.write(CR_LF_SLICE)
         @socket.write(data)
         @socket.write(CR_LF_SLICE)
+
+        @waiting_count.add 1
       end
     end
 
@@ -190,6 +193,8 @@ module NATS
         @socket.write(PUB_SLICE)
         @socket.write(subject.to_slice)
         @socket.write(" 0\r\n\r\n".to_slice)
+
+        @waiting_count.add 1
       end
     end
 
@@ -219,7 +224,19 @@ module NATS
         @socket.write(CR_LF_SLICE)
         @socket.write(data)
         @socket.write(CR_LF_SLICE)
+
+        @waiting_count.add 1
       end
+    end
+
+    # Flush will flush the connection to the server. Can specify a *timeout*.
+    def flush(timeout = 2.second)
+      ch = Channel(Nil).new
+      @pongs.push(ch)
+      @out.synchronize { @socket.write(PING_SLICE) }
+      flush_outbound
+      spawn { sleep timeout; ch.close }
+      ch.receive rescue {raise "Flush Timeout"}
     end
 
     def new_inbox
@@ -282,6 +299,8 @@ module NATS
         @socket.write(subject.to_slice)
         @socket << ' ' << sid
         @socket.write(CR_LF_SLICE)
+
+        @waiting_count.add 1
       end
 
       InternalSubscription.new(sid, self).tap do |sub|
@@ -302,6 +321,8 @@ module NATS
         @socket.write(subject.to_slice)
         @socket << ' ' << sid
         @socket.write(CR_LF_SLICE)
+
+        @waiting_count.add 1
       end
 
       Subscription.new(sid, self, callback).tap do |sub|
@@ -324,6 +345,8 @@ module NATS
         @socket.write(queue.to_slice)
         @socket << ' ' << sid
         @socket.write(CR_LF_SLICE)
+
+        @waiting_count.add 1
       end
 
       Subscription.new(sid, self, callback).tap do |sub|
@@ -342,6 +365,8 @@ module NATS
         @socket.write("UNSUB ".to_slice)
         @socket << sid
         @socket.write(CR_LF_SLICE)
+
+        @waiting_count.add 1
       end
     end
 
@@ -451,12 +476,24 @@ module NATS
     private def flush_outbound
       @out.synchronize do
         @socket.flush
+        @waiting_count.set 0
       end
     end
 
     private def outbound
       until closed?
-        sleep 10.milliseconds
+        {
+          5.microseconds,
+          10.microseconds,
+          50.microseconds,
+          100.microseconds,
+          500.microseconds,
+          1.millisecond,
+          5.milliseconds,
+        }.each do |duration|
+          sleep duration
+          break if @waiting_count.get > 0
+        end
         flush_outbound
       end
     end
