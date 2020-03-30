@@ -64,6 +64,7 @@ module NATS
       @nuid = NUID.new
       @resp_sub_prefix = "_INBOX.#{@nuid.next}"
       @rand = Random.new
+      @waiting_count = Atomic(Int32).new(0)
 
       # This will be updated when we receive an INFO from the server.
       @max_payload = MAX_PAYLOAD
@@ -107,7 +108,6 @@ module NATS
       spawn inbound
 
       # spawn for our outbound
-      @flush = Channel(Bool?).new(8)
       spawn outbound
     end
 
@@ -145,7 +145,6 @@ module NATS
       @out.synchronize do
         yield
       end
-      @flush.send(true) if @flush.empty?
     end
 
     private def check_size(data)
@@ -175,8 +174,9 @@ module NATS
         @socket.write(CR_LF_SLICE)
         @socket.write(data)
         @socket.write(CR_LF_SLICE)
+
+        @waiting_count.add 1
       end
-      @flush.send(true) if @flush.empty?
     end
 
     # Publishes an empty message to a given subject.
@@ -193,9 +193,9 @@ module NATS
         @socket.write(PUB_SLICE)
         @socket.write(subject.to_slice)
         @socket.write(" 0\r\n\r\n".to_slice)
-      end
 
-      @flush.send(true) if @flush.empty?
+        @waiting_count.add 1
+      end
     end
 
     # Publishes a messages to a given subject with a reply subject.
@@ -224,8 +224,9 @@ module NATS
         @socket.write(CR_LF_SLICE)
         @socket.write(data)
         @socket.write(CR_LF_SLICE)
+
+        @waiting_count.add 1
       end
-      @flush.send(true) if @flush.empty?
     end
 
     # Flush will flush the connection to the server. Can specify a *timeout*.
@@ -250,7 +251,7 @@ module NATS
       String::Builder.build(TOKEN_LENGTH) do |io|
         (0...TOKEN_LENGTH).each do
           io << NUID::DIGITS[rn % NUID::BASE]
-          rn /= NUID::BASE
+          rn //= NUID::BASE
         end
       end
     end
@@ -298,8 +299,10 @@ module NATS
         @socket.write(subject.to_slice)
         @socket << ' ' << sid
         @socket.write(CR_LF_SLICE)
+
+        @waiting_count.add 1
       end
-      @flush.send(true) if @flush.empty?
+
       InternalSubscription.new(sid, self).tap do |sub|
         @subs[sid] = sub
       end
@@ -318,8 +321,10 @@ module NATS
         @socket.write(subject.to_slice)
         @socket << ' ' << sid
         @socket.write(CR_LF_SLICE)
+
+        @waiting_count.add 1
       end
-      @flush.send(true) if @flush.empty?
+
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
       end
@@ -340,8 +345,10 @@ module NATS
         @socket.write(queue.to_slice)
         @socket << ' ' << sid
         @socket.write(CR_LF_SLICE)
+
+        @waiting_count.add 1
       end
-      @flush.send(true) if @flush.empty?
+
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
       end
@@ -358,8 +365,9 @@ module NATS
         @socket.write("UNSUB ".to_slice)
         @socket << sid
         @socket.write(CR_LF_SLICE)
+
+        @waiting_count.add 1
       end
-      @flush.send(true) if @flush.empty?
     end
 
     # Close a connection to the NATS server.
@@ -371,10 +379,7 @@ module NATS
     def close
       return if @closed
       @closed = true
-      @out.synchronize do
-        flush_outbound
-        @socket.flush
-      end
+      flush_outbound
       @socket.close
       @subs.each { |sid, sub| sub.unsubscribe }
       # TODO(dlc) - pop any calls in flush.
@@ -484,20 +489,28 @@ module NATS
       close
     end
 
-    @flush_counter = 0
-
     private def flush_outbound
       @out.synchronize do
         @socket.flush
+        @waiting_count.set 0
       end
     end
 
     private def outbound
       until closed?
-        fs = @flush.receive
-        break if fs.nil?
+        {
+          5.microseconds,
+          10.microseconds,
+          50.microseconds,
+          100.microseconds,
+          500.microseconds,
+          1.millisecond,
+          5.milliseconds,
+        }.each do |duration|
+          sleep duration
+          break if @waiting_count.get > 0
+        end
         flush_outbound
-        Fiber.yield
       end
     end
 
@@ -527,8 +540,8 @@ module NATS
       if match = line.match(INFO)
         info_json = match.captures.first
         @server_info = JSON.parse(info_json.to_s).as_h
-        unless @server_info[:max_payload]?.nil?
-          @max_payload = @server_info[:max_payload].as_i
+        if max_payload = @server_info["max_payload"]?
+          @max_payload = max_payload.as_i
         end
       else
         raise "INFO not valid"
