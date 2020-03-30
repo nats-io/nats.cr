@@ -437,15 +437,31 @@ module NATS
     # Should try manual blind read and hand rolled parser similar to Golang. Also make sure Channels is not slowdown.
     private def inbound
       until closed?
-        case data = @socket.gets('\n')
-        when MSG
-          bytesize = $5.to_i
-          sid = $2.to_i
+        case data = @socket.gets '\n'
+        when Nil # Remove this from the compile-time type
+        when .starts_with?("MSG ")
+          starting_point = 4 # "MSG "
+          if (subject_end = data.index(' ', starting_point)) && (sid_end = data.index(' ', subject_end + 1))
+            subject = data[starting_point...subject_end]
+            sid = data[subject_end + 1...sid_end].to_i
+
+            # Figure out if we got a reply_to and set it and bytesize accordingly
+            reply_to_with_byte_size = data[sid_end + 1...-2]
+            if boundary = reply_to_with_byte_size.index(' ')
+              reply_to = reply_to_with_byte_size[0...boundary]
+              bytesize = reply_to_with_byte_size[boundary + 1..-1].to_i
+            else
+              bytesize = reply_to_with_byte_size.to_i
+            end
+          else
+            raise Exception.new("Invalid message declaration: #{data}")
+          end
+
           payload = Bytes.new(bytesize)
           @socket.read_fully?(payload) || raise "Unexpected EOF"
-          @socket.gets('\n')
-          sub = @subs[sid]
-          sub.send(Msg.new($1, payload, $4?, self)) unless sub.nil?
+          2.times { @socket.read_byte } # CRLF
+
+          @subs[sid].send(Msg.new(subject, payload, reply_to, self))
         when PING
           @out.synchronize { @socket.write(PONG_SLICE) }
           flush_outbound
