@@ -482,17 +482,23 @@ module NATS
 
     private def outbound
       until closed?
-        {
-          5.microseconds,
-          10.microseconds,
-          50.microseconds,
-          100.microseconds,
-          500.microseconds,
-          1.millisecond,
-          5.milliseconds,
-        }.each do |duration|
-          sleep duration
-          break if @waiting_count.get > 0
+        pre_waiting = @waiting_count.get
+        Fiber.yield
+        current_waiting = @waiting_count.get
+        if current_waiting != pre_waiting
+          {
+            5.microseconds,
+            10.microseconds,
+            50.microseconds,
+            100.microseconds,
+            500.microseconds,
+            1.millisecond,
+            5.milliseconds,
+          }.each do |duration|
+            sleep duration
+            current_waiting = @waiting_count.get
+            break if current_waiting == pre_waiting || current_waiting == 0
+          end
         end
         flush_outbound
       end
