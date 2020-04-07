@@ -306,11 +306,11 @@ module NATS
 
         @waiting_count.add 1
       end
+      send_flush
 
       InternalSubscription.new(sid, self).tap do |sub|
         @subs[sid] = sub
       end
-      send_flush
     end
 
     # Subscribe to a given subject. Will yield to the callback provided with the message received.
@@ -329,11 +329,11 @@ module NATS
 
         @waiting_count.add 1
       end
+      send_flush
 
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
       end
-      send_flush
     end
 
     # Subscribe to a given subject with the queue group. Will yield to the callback provided with the message received.
@@ -354,11 +354,11 @@ module NATS
 
         @waiting_count.add 1
       end
+      send_flush
 
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
       end
-      send_flush
     end
 
     def subscribe(subject : String, queue : String | Nil, &callback : Msg ->)
