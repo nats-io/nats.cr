@@ -84,6 +84,7 @@ module NATS
 
       # For efficient batched writes
       @out = Mutex.new
+      @flush = Channel(Nil).new(1)
 
       @closed = false
       @gsid = 0
@@ -177,6 +178,7 @@ module NATS
 
         @waiting_count.add 1
       end
+      send_flush
     end
 
     # Publishes an empty message to a given subject.
@@ -196,6 +198,7 @@ module NATS
 
         @waiting_count.add 1
       end
+      send_flush
     end
 
     # Publishes a messages to a given subject with a reply subject.
@@ -227,6 +230,7 @@ module NATS
 
         @waiting_count.add 1
       end
+      send_flush
     end
 
     # Flush will flush the connection to the server. Can specify a *timeout*.
@@ -306,6 +310,7 @@ module NATS
       InternalSubscription.new(sid, self).tap do |sub|
         @subs[sid] = sub
       end
+      send_flush
     end
 
     # Subscribe to a given subject. Will yield to the callback provided with the message received.
@@ -328,6 +333,7 @@ module NATS
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
       end
+      send_flush
     end
 
     # Subscribe to a given subject with the queue group. Will yield to the callback provided with the message received.
@@ -352,6 +358,7 @@ module NATS
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
       end
+      send_flush
     end
 
     def subscribe(subject : String, queue : String | Nil, &callback : Msg ->)
@@ -368,6 +375,7 @@ module NATS
 
         @waiting_count.add 1
       end
+      send_flush
     end
 
     # Close a connection to the NATS server.
@@ -482,6 +490,8 @@ module NATS
 
     private def outbound
       until closed?
+        @flush.receive
+
         pre_waiting = @waiting_count.get
         Fiber.yield
         current_waiting = @waiting_count.get
@@ -499,8 +509,8 @@ module NATS
             current_waiting = @waiting_count.get
             break if current_waiting == pre_waiting || current_waiting == 0
           end
+          flush_outbound
         end
-        flush_outbound
       end
     end
 
@@ -520,6 +530,7 @@ module NATS
       else
         raise "Connection Terminated"
       end
+      send_flush
     end
 
     private def process_first_info
@@ -559,6 +570,11 @@ module NATS
         end
       end
       @socket << "\r\n"
+      send_flush
+    end
+
+    private def send_flush
+      @flush.send nil if @waiting_count.get == 0
     end
   end
 end
