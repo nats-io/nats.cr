@@ -22,7 +22,7 @@ require "./msg"
 require "./subscription"
 
 module NATS
-  VERSION = "0.0.1"
+  VERSION = "0.0.2"
   LANG    = "crystal"
 
   class Connection
@@ -99,7 +99,6 @@ module NATS
       # send connect
       send_connect
 
-      # FIXME(dlc) - make sure we do not have auth error etc.
       # send ping and expect pong.
       connect_ok?
 
@@ -107,7 +106,6 @@ module NATS
       spawn inbound
 
       # spawn for our outbound
-      @flush = Channel(Bool?).new(8)
       spawn outbound
     end
 
@@ -145,7 +143,6 @@ module NATS
       @out.synchronize do
         yield
       end
-      @flush.send(true) if @flush.empty?
     end
 
     private def check_size(data)
@@ -176,7 +173,6 @@ module NATS
         @socket.write(data)
         @socket.write(CR_LF_SLICE)
       end
-      @flush.send(true) if @flush.empty?
     end
 
     # Publishes an empty message to a given subject.
@@ -194,8 +190,6 @@ module NATS
         @socket.write(subject.to_slice)
         @socket.write(" 0\r\n\r\n".to_slice)
       end
-
-      @flush.send(true) if @flush.empty?
     end
 
     # Publishes a messages to a given subject with a reply subject.
@@ -225,7 +219,6 @@ module NATS
         @socket.write(data)
         @socket.write(CR_LF_SLICE)
       end
-      @flush.send(true) if @flush.empty?
     end
 
     # Flush will flush the connection to the server. Can specify a *timeout*.
@@ -250,7 +243,7 @@ module NATS
       String::Builder.build(TOKEN_LENGTH) do |io|
         (0...TOKEN_LENGTH).each do
           io << NUID::DIGITS[rn % NUID::BASE]
-          rn /= NUID::BASE
+          rn //= NUID::BASE
         end
       end
     end
@@ -299,7 +292,7 @@ module NATS
         @socket << ' ' << sid
         @socket.write(CR_LF_SLICE)
       end
-      @flush.send(true) if @flush.empty?
+
       InternalSubscription.new(sid, self).tap do |sub|
         @subs[sid] = sub
       end
@@ -319,7 +312,7 @@ module NATS
         @socket << ' ' << sid
         @socket.write(CR_LF_SLICE)
       end
-      @flush.send(true) if @flush.empty?
+
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
       end
@@ -341,7 +334,7 @@ module NATS
         @socket << ' ' << sid
         @socket.write(CR_LF_SLICE)
       end
-      @flush.send(true) if @flush.empty?
+
       Subscription.new(sid, self, callback).tap do |sub|
         @subs[sid] = sub
       end
@@ -359,7 +352,6 @@ module NATS
         @socket << sid
         @socket.write(CR_LF_SLICE)
       end
-      @flush.send(true) if @flush.empty?
     end
 
     # Close a connection to the NATS server.
@@ -371,11 +363,10 @@ module NATS
     def close
       return if @closed
       @closed = true
-      @out.synchronize do
-        flush_outbound
-        @socket.flush
-      end
-      @socket.close
+      flush_outbound
+      @socket.close unless @socket.closed?
+    rescue
+    ensure
       @subs.each { |sid, sub| sub.unsubscribe }
       # TODO(dlc) - pop any calls in flush.
       @close_cb.try do |cb|
@@ -437,15 +428,32 @@ module NATS
     # Should try manual blind read and hand rolled parser similar to Golang. Also make sure Channels is not slowdown.
     private def inbound
       until closed?
-        case data = @socket.gets(CR_LF)
-        when MSG
-          bytesize = $5.to_i
-          sid = $2.to_i
+        case data = @socket.gets '\n'
+        when Nil # Remove this from the compile-time type
+          close
+        when .starts_with?("MSG ")
+          starting_point = 4 # "MSG "
+          if (subject_end = data.index(' ', starting_point)) && (sid_end = data.index(' ', subject_end + 1))
+            subject = data[starting_point...subject_end]
+            sid = data[subject_end + 1...sid_end].to_i
+
+            # Figure out if we got a reply_to and set it and bytesize accordingly
+            reply_to_with_byte_size = data[sid_end + 1...-2]
+            if boundary = reply_to_with_byte_size.index(' ')
+              reply_to = reply_to_with_byte_size[0...boundary]
+              bytesize = reply_to_with_byte_size[boundary + 1..-1].to_i
+            else
+              bytesize = reply_to_with_byte_size.to_i
+            end
+          else
+            raise Exception.new("Invalid message declaration: #{data}")
+          end
+
           payload = Bytes.new(bytesize)
           @socket.read_fully?(payload) || raise "Unexpected EOF"
-          @socket.gets(CR_LF)
-          sub = @subs[sid]
-          sub.send(Msg.new($1, payload, $4?, self)) unless sub.nil?
+          2.times { @socket.read_byte } # CRLF
+
+          @subs[sid].send(Msg.new(subject, payload, reply_to, self))
         when PING
           @out.synchronize { @socket.write(PONG_SLICE) }
           flush_outbound
@@ -468,20 +476,17 @@ module NATS
       close
     end
 
-    @flush_counter = 0
-
     private def flush_outbound
       @out.synchronize do
-        @socket.flush
+        @socket.flush unless @socket.closed?
       end
+    rescue
     end
 
     private def outbound
       until closed?
-        fs = @flush.receive
-        break if fs.nil?
+        sleep 3.milliseconds
         flush_outbound
-        Fiber.yield
       end
     end
 
@@ -511,8 +516,8 @@ module NATS
       if match = line.match(INFO)
         info_json = match.captures.first
         @server_info = JSON.parse(info_json.to_s).as_h
-        unless @server_info[:max_payload]?.nil?
-          @max_payload = @server_info[:max_payload].as_i
+        if max_payload = @server_info["max_payload"]?
+          @max_payload = max_payload.as_i
         end
       else
         raise "INFO not valid"

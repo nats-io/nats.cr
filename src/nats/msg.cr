@@ -24,7 +24,7 @@ module NATS
   #   puts "Raw Data is #{msg.data}"
   # end
   # ```
-  class Msg
+  struct Msg
     getter subject : String
     getter reply : String?
     getter data : Bytes
@@ -33,7 +33,7 @@ module NATS
 
     # :nodoc:
     def to_s(io : IO)
-      io << String.new(data)
+      io.write data
     end
 
     # :nodoc:

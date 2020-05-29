@@ -45,11 +45,11 @@ class NATSServer
   end
 
   def wait_for_server(uri, max_wait = 5)
-    start = Time.now
-    wait = Time::Span.new(0, 0, max_wait)
-    while (Time.now - start < wait) # Wait max_wait seconds max
+    start = Time.monotonic
+    wait = Time::Span.new(seconds: max_wait)
+    while (Time.monotonic - start < wait) # Wait max_wait seconds max
       return if server_running?(uri)
-      sleep(20.millisecond)
+      sleep(20.milliseconds)
     end
     raise "Server not started, can not connect"
   end

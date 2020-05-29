@@ -4,8 +4,8 @@ describe "NATS::Connection#auth" do
   user = "user"
   pass = "s3cr3t"
 
-  auth_uri = URI.parse("nats://#{user}:#{pass}@127.0.0.1:4322")
-  noauth_uri = URI.parse("nats://127.0.0.1:4322")
+  auth_uri = URI.parse("nats://#{user}:#{pass}@127.0.0.1:4333")
+  noauth_uri = URI.parse("nats://127.0.0.1:4333")
 
   auth_server : NATSServer | Nil = nil
 
