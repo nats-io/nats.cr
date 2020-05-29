@@ -10,7 +10,7 @@ describe NATS::Connection do
 
   Spec.after_each do
     server.try(&.shutdown)
-    sleep(10.millisecond)
+    sleep(20.millisecond)
     server = nil
   end
 

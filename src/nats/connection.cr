@@ -22,7 +22,7 @@ require "./msg"
 require "./subscription"
 
 module NATS
-  VERSION = "0.0.1"
+  VERSION = "0.0.2"
   LANG    = "crystal"
 
   class Connection
@@ -99,7 +99,6 @@ module NATS
       # send connect
       send_connect
 
-      # FIXME(dlc) - make sure we do not have auth error etc.
       # send ping and expect pong.
       connect_ok?
 
@@ -365,7 +364,9 @@ module NATS
       return if @closed
       @closed = true
       flush_outbound
-      @socket.close
+      @socket.close unless @socket.closed?
+    rescue
+    ensure
       @subs.each { |sid, sub| sub.unsubscribe }
       # TODO(dlc) - pop any calls in flush.
       @close_cb.try do |cb|
@@ -429,6 +430,7 @@ module NATS
       until closed?
         case data = @socket.gets '\n'
         when Nil # Remove this from the compile-time type
+          close
         when .starts_with?("MSG ")
           starting_point = 4 # "MSG "
           if (subject_end = data.index(' ', starting_point)) && (sid_end = data.index(' ', subject_end + 1))
@@ -476,8 +478,9 @@ module NATS
 
     private def flush_outbound
       @out.synchronize do
-        @socket.flush
+        @socket.flush unless @socket.closed?
       end
+    rescue
     end
 
     private def outbound

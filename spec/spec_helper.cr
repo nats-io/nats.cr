@@ -46,7 +46,7 @@ class NATSServer
 
   def wait_for_server(uri, max_wait = 5)
     start = Time.monotonic
-    wait = Time::Span.new(0, 0, max_wait)
+    wait = Time::Span.new(seconds: max_wait)
     while (Time.monotonic - start < wait) # Wait max_wait seconds max
       return if server_running?(uri)
       sleep(20.milliseconds)
