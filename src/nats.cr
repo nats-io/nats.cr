@@ -1,3 +1,3 @@
 require "./nats/*"
 
-# TODO: Write documentation for `Nats`
+# TODO: Write documentation for `NATS`
