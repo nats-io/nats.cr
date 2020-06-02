@@ -34,8 +34,6 @@ answer = nc.request("req", "Help!")
 puts "Received a response '#{answer}'!"
 
 sub.close
-
-nc.flush
 nc.close
 ```
 
