@@ -1,5 +1,5 @@
 name: nats
-version: 0.0.1
+version: 0.0.2
 
 authors:
   - Derek Collison <derek@nats.io>
@@ -14,6 +14,6 @@ targets:
   nats-req:
     main: bin/nats-req.cr
 
-crystal: 0.32.0
+crystal: 0.34.0
 
 license: Apache 2
