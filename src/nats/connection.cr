@@ -57,6 +57,9 @@ module NATS
       @user : String? = nil,
       @pass : String? = nil,
       @name : String? = nil,
+      @tlskey : String? = nil,
+      @tlscert : String? = nil,
+      @tlscacert : String? = nil,
       @echo = true,
       @pedantic = false
     )
@@ -523,9 +526,13 @@ module NATS
         raise "INFO not valid"
       end
 
-      # FIXME(dlc) - client side certs, etc.
       tls_required = @server_info["tls_required"].as_bool rescue false
-      @socket = OpenSSL::SSL::Socket::Client.new(@socket) if tls_required
+      if tls_required
+        use_certs = @tlscacert && @tlskey && @tlscert
+        context = use_certs ? OpenSSL::SSL::Context::Client.from_hash({"ca" => @tlscacert, "key" => @tlskey, "cert" => @tlscert}) : OpenSSL::SSL::Context::Client.new
+
+        @socket = OpenSSL::SSL::Socket::Client.new(@socket, context)
+      end
     end
 
     private def send_connect
