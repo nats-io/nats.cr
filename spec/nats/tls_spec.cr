@@ -23,7 +23,7 @@ describe "NATS::Connection#TLS" do
       server.start(false)
       server.wait_for_server(uri)
 
-      nc = NATS::Connection.new(tls_with_cert_uri, tlskey: tls_key, tlscert: tls_cert, tlscacert: tls_ca_cert)
+      nc = NATS::Connection.new(tls_with_cert_uri, tls_config: {"ca" => tls_ca_cert, "key" => tls_key, "cert" => tls_cert})
       nc.should_not be_nil
       nc.close
 
