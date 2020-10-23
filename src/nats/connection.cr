@@ -47,6 +47,7 @@ module NATS
     # ```
     # nc = NATS::Connection.new("demo.nats.io")
     # nc = NATS::Connection.new("tls://demo.nats.io")
+    # nc = NATS::Connection.new("tls://demo.nats.io", tls_config: {"ca" => "ca.pem", "key" => "cert.key", "cert" => "cert.pem"})
     # nc = NATS::Connection.new("nats://#{user}:#{pass}@127.0.0.1:4222")
     # nc = NATS::Connection.new(4222, name: "Sample App", user: "derek", pass: "s3cr3t")
     # nc = NATS::Connection.new(4222)
@@ -58,7 +59,8 @@ module NATS
       @pass : String? = nil,
       @name : String? = nil,
       @echo = true,
-      @pedantic = false
+      @pedantic = false,
+      @tls_config : Hash(String, String)? = nil
     )
       # For new style INBOX behavior.
       @nuid = NUID.new
@@ -523,9 +525,12 @@ module NATS
         raise "INFO not valid"
       end
 
-      # FIXME(dlc) - client side certs, etc.
       tls_required = @server_info["tls_required"].as_bool rescue false
-      @socket = OpenSSL::SSL::Socket::Client.new(@socket) if tls_required
+      if tls_required
+        context = @tls_config.nil? ? OpenSSL::SSL::Context::Client.new : OpenSSL::SSL::Context::Client.from_hash(@tls_config.as(Hash(String, String)))
+
+        @socket = OpenSSL::SSL::Socket::Client.new(@socket, context)
+      end
     end
 
     private def send_connect
