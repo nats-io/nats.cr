@@ -39,7 +39,7 @@ class NATSServer
   end
 
   def shutdown
-    @p.try(&.kill)
+    @p.try(&.terminate)
     @p = nil
   rescue
   end

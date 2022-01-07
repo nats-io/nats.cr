@@ -1,22 +1,14 @@
 language: crystal
-sudo: required
-dist: bionic
+
+os: linux
+dist: focal
 
 cache:
   directories:
   - $HOME/nats-server
 
 before_install:
-  - bash ./scripts/install_nats-server.sh
-
-before_script:
-  - export PATH=$HOME/nats-server:$PATH
-
-cache:
-  directories:
-  - $HOME/nats-server
-
-before_install:
+  - curl -fsSL https://crystal-lang.org/install.sh | sudo bash
   - bash ./scripts/install_nats-server.sh
 
 before_script:
